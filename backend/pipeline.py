@@ -1,5 +1,6 @@
 from __future__ import annotations
 from pathlib import Path
+import os
 from dataclasses import dataclass
 from typing import Dict, Tuple, Any, List
 
@@ -42,9 +43,26 @@ class FlightPriceModel:
         self.model_path: Path | None = None
         self.model_version: str | None = None
 
-    def _load_data(self, data_path: Path) -> pd.DataFrame:
-        df = pd.read_csv(data_path)
-        return df
+    def _load_data(self, data_path: Path | str) -> pd.DataFrame:
+        """
+        Load training data from a local path or remote URL.
+        If the local file does not exist, optionally download from env DATASET_URL
+        or fall back to a public GitHub raw URL of this repository.
+        """
+        # If a string is provided, use it as-is (could be URL)
+        if isinstance(data_path, str):
+            return pd.read_csv(data_path)
+
+        # Local path exists
+        if data_path.exists():
+            return pd.read_csv(data_path)
+
+        # Try environment-provided URL first
+        dataset_url = os.getenv(
+            "DATASET_URL",
+            "https://raw.githubusercontent.com/JayAtria-7/SkySense-Flight-Price-Predictor/main/Clean_Dataset.csv",
+        )
+        return pd.read_csv(dataset_url)
 
     @staticmethod
     def _prepare_training_frame(df: pd.DataFrame) -> pd.DataFrame:
@@ -129,7 +147,57 @@ class FlightPriceModel:
             return
 
         # Train fresh
-        df_raw = self._load_data(data_path)
+        try:
+            df_raw = self._load_data(data_path)
+        except Exception:
+            # Last-resort: try the default GitHub raw URL directly
+            try:
+                df_raw = pd.read_csv(
+                    "https://raw.githubusercontent.com/JayAtria-7/SkySense-Flight-Price-Predictor/main/Clean_Dataset.csv"
+                )
+            except Exception:
+                # If everything fails, fallback to an empty frame; we'll build a dummy model
+                df_raw = pd.DataFrame()
+
+        if df_raw.empty:
+            # Build a minimal dummy pipeline to keep the API responsive
+            numeric_features = ["duration", "days_left", "stops", "class"]
+            cat_features = [
+                "airline", "source_city", "departure_time", "arrival_time", "destination_city"
+            ]
+            preprocessor = self._make_preprocessor()
+            # Train on a tiny synthetic dataset with a constant target
+            synth = pd.DataFrame([
+                {
+                    "airline": "Unknown",
+                    "source_city": "Delhi",
+                    "departure_time": "Unknown",
+                    "arrival_time": "Unknown",
+                    "destination_city": "Mumbai",
+                    "duration": 2.0,
+                    "days_left": 15,
+                    "stops": 0,
+                    "class": 0,
+                }
+            ])
+            y_synth = pd.Series([5000.0], name="price")
+            model = RandomForestRegressor(n_jobs=-1, random_state=42, n_estimators=10)
+            self.pipeline = Pipeline(steps=[("preprocessor", preprocessor), ("model", model)])
+            self.pipeline.fit(synth, y_synth)
+            self.feature_names_out_ = numeric_features  # minimal
+            self.route_medians = RouteMedians(route_to_duration_median={}, global_duration_median=2.0)
+            self.model_version = "dummy-boot"
+            return
+
+        # Optionally subsample to keep model small and training fast in hosted environments
+        try:
+            max_rows = int(os.getenv("MAX_TRAIN_ROWS", "25000"))
+        except ValueError:
+            max_rows = 25000
+
+        if len(df_raw) > max_rows:
+            df_raw = df_raw.sample(n=max_rows, random_state=42)
+
         df = self._prepare_training_frame(df_raw.copy())
         self.route_medians = self._build_route_medians(df)
 
@@ -150,14 +218,17 @@ class FlightPriceModel:
         self.feature_names_out_ = [*num_names, *cat_names]
         self.model_version = f"rf-{int(time.time())}"
 
-        # Persist
-        self.model_path.parent.mkdir(parents=True, exist_ok=True)
-        joblib.dump({
-            "pipeline": self.pipeline,
-            "route_medians": self.route_medians,
-            "feature_names_out": self.feature_names_out_,
-            "model_version": self.model_version,
-        }, self.model_path)
+        # Persist (best-effort; may fail on read-only FS)
+        try:
+            self.model_path.parent.mkdir(parents=True, exist_ok=True)
+            joblib.dump({
+                "pipeline": self.pipeline,
+                "route_medians": self.route_medians,
+                "feature_names_out": self.feature_names_out_,
+                "model_version": self.model_version,
+            }, self.model_path)
+        except Exception:
+            pass
 
     # --- Inference helpers ---
     def impute_duration(self, source_city: str, destination_city: str, duration: float | None) -> Tuple[float, bool, float]:
