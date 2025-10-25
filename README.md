@@ -1,3 +1,13 @@
+---
+title: SkySense Flight Price Predictor
+emoji: ✈️
+colorFrom: indigo
+colorTo: blue
+sdk: docker
+app_port: 8000
+pinned: false
+---
+
 # Flight Price Predictor (UI + API)
 
 A production-ready starter for predicting flight prices using your existing notebook logic. It includes:
