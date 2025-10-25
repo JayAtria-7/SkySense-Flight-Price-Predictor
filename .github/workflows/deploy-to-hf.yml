@@ -21,7 +21,8 @@ jobs:
 
       - name: Push to Hugging Face Space
         env:
-          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          # Prefer repository/organization secret; fallback to repository variable if secret is missing
+          HF_TOKEN: ${{ secrets.HF_TOKEN || vars.HF_TOKEN }}
           HF_USERNAME: JayAtriahf-7
           SPACE_NAME: SkySense-Flight-Price-Predictor
         run: |
