@@ -1,5 +1,6 @@
 from __future__ import annotations
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import ValidationError
@@ -39,11 +40,7 @@ if web_dir.exists():
 @app.get("/")
 def root():
     # Redirect root to the UI index for convenience
-    # Using a simple HTML redirect to avoid extra dependencies
-    return {
-        "message": "Flight Price Predictor API. Open /ui/ for the web app.",
-        "endpoints": ["/api/metadata", "/api/predict", "/ui/"],
-    }
+    return RedirectResponse(url="/ui/")
 
 
 @app.on_event("startup")
