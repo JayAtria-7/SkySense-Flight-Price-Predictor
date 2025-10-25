@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Flight Price Predictor</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="container" id="top">
+    <h1>Flight Price Predictor</h1>
+    <p class="subtitle">Predict flight price with smart defaults and clear assumptions.</p>
+
+    <form id="predict-form" novalidate aria-describedby="form-errors">
+      <div class="grid">
+        <!-- Column A: Trip details -->
+        <section class="card" aria-labelledby="trip-details-title">
+          <h2 id="trip-details-title">Trip details</h2>
+
+          <label for="source_city">Source City <span class="req" aria-hidden="true">*</span></label>
+          <select id="source_city" name="source_city" required aria-required="true"></select>
+          <small id="source_city_help" class="help">Select your departure city.</small>
+
+          <div class="row">
+            <div class="grow">
+              <label for="destination_city">Destination City <span class="req" aria-hidden="true">*</span></label>
+              <select id="destination_city" name="destination_city" required aria-required="true"></select>
+            </div>
+            <div class="swap-wrap">
+              <button id="swap" class="swap" type="button" aria-label="Swap cities" title="Swap cities">⇄</button>
+            </div>
+          </div>
+          <small id="destination_city_help" class="help">Destination must be different from source.</small>
+
+          <label for="stops">Stops <span class="req" aria-hidden="true">*</span></label>
+          <select id="stops" name="stops" required aria-required="true">
+            <option value="">Select</option>
+            <option value="zero">zero</option>
+            <option value="one">one</option>
+            <option value="two_or_more">two_or_more</option>
+          </select>
+          <small class="help">Number of layovers; zero means non-stop.</small>
+
+          <label for="days_left">Days Left <span class="req" aria-hidden="true">*</span></label>
+          <input id="days_left" name="days_left" type="number" min="0" step="1" required aria-required="true" placeholder="e.g., 7" />
+          <div class="chips" role="group" aria-label="Quick days left presets">
+            <button type="button" data-days="1">1</button>
+            <button type="button" data-days="3">3</button>
+            <button type="button" data-days="7">7</button>
+            <button type="button" data-days="14">14</button>
+            <button type="button" data-days="21">21</button>
+            <button type="button" data-days="30">30</button>
+          </div>
+
+          <label for="duration">Duration (hours)</label>
+          <input id="duration" name="duration" type="number" min="0.1" step="0.1" placeholder="e.g., 2.2" aria-describedby="duration_help duration_hint" />
+          <small id="duration_help" class="help">If empty, typical route median will be used.</small>
+          <small id="duration_hint" class="help"></small>
+          <span id="duration_imputed" class="badge hidden" role="status" aria-live="polite">Imputed</span>
+        </section>
+
+        <!-- Column B: Flight context -->
+        <section class="card" aria-labelledby="flight-context-title">
+          <h2 id="flight-context-title">Flight context</h2>
+
+          <fieldset>
+            <legend>Class <span class="req" aria-hidden="true">*</span></legend>
+            <label><input type="radio" name="class" value="Economy" checked /> Economy</label>
+            <label><input type="radio" name="class" value="Business" /> Business</label>
+            <small class="help">Business typically increases predicted price.</small>
+          </fieldset>
+
+          <label for="airline">Airline</label>
+          <select id="airline" name="airline"></select>
+          <small class="help">Select airline (optional)</small>
+
+          <label for="departure_time">Departure Time</label>
+          <select id="departure_time" name="departure_time"></select>
+          <small class="help">Select departure time (optional)</small>
+
+          <label for="arrival_time">Arrival Time</label>
+          <select id="arrival_time" name="arrival_time"></select>
+          <small class="help">Select arrival time (optional)</small>
+
+          <label for="flight">Flight Number</label>
+          <input id="flight" name="flight" type="text" placeholder="For your reference only—ignored by model." />
+        </section>
+      </div>
+
+      <div class="actions">
+        <button id="predict" type="submit" disabled>Predict</button>
+        <button id="reset" type="reset">Reset</button>
+        <button id="clear" type="button">Clear</button>
+      </div>
+
+      <div id="form-errors" class="errors" role="alert" aria-live="polite"></div>
+
+      <details class="advanced">
+        <summary>Advanced</summary>
+        <label for="actual_price">Actual Price (optional)</label>
+        <input id="actual_price" name="actual_price" type="number" min="0" step="1" />
+      </details>
+    </form>
+
+    <section id="result" class="result hidden" aria-live="polite">
+      <h2>Prediction</h2>
+      <div class="price"><span id="predicted"></span></div>
+      <div class="interval">Estimated range: <span id="range"></span></div>
+      <div class="contributors">
+        <h3>Top contributing factors</h3>
+        <ul id="contributors"></ul>
+      </div>
+      <div class="assumptions">
+        <h3>Assumptions used</h3>
+        <ul id="assumptions"></ul>
+        <button id="edit-assumptions" type="button">Edit assumptions</button>
+      </div>
+      <div class="share">
+        <button id="copy-json" type="button">Copy as JSON</button>
+        <button id="copy-csv" type="button">Copy as CSV</button>
+      </div>
+
+      <div class="scenarios">
+        <h3>Try scenarios</h3>
+        <div class="chips" role="group" aria-label="Scenario chips">
+          <button type="button" data-scenario="days_1">days_left: 1</button>
+          <button type="button" data-scenario="days_7">days_left: 7</button>
+          <button type="button" data-scenario="days_14">days_left: 14</button>
+          <button type="button" data-scenario="days_30">days_left: 30</button>
+          <button type="button" data-scenario="class_econ">Class: Economy</button>
+          <button type="button" data-scenario="class_bus">Class: Business</button>
+          <button type="button" data-scenario="stops_zero">Stops: zero</button>
+          <button type="button" data-scenario="stops_one">Stops: one</button>
+        </div>
+        <table id="scenario-table" class="hidden" aria-label="Scenario comparison">
+          <thead><tr><th>Scenario</th><th>Predicted Price</th><th>Key Assumptions</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <p class="microcopy">Predicted price represents similar historical patterns; uncertainty reflects variance across model estimators.</p>
+    </section>
+  </main>
+
+  <script src="app.js" defer></script>
+</body>
+</html>

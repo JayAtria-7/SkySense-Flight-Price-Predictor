@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+*.db
+
+# Venvs and tooling
+.venv/
+.env
+.env.*
+*.env
+
+# Notebooks outputs
+.ipynb_checkpoints/
+
+# VCS
+.git/
+.gitignore
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build context bloat
+logs/
+**/__pycache__/
