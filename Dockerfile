@@ -22,7 +22,10 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 # Copy application
 COPY backend ./backend
 COPY web ./web
-COPY Clean_Dataset.csv ./
+
+# Optional: allow overriding dataset URL and training sample size at runtime
+ENV DATASET_URL="https://raw.githubusercontent.com/JayAtria-7/SkySense-Flight-Price-Predictor/main/Clean_Dataset.csv" \
+  MAX_TRAIN_ROWS=25000
 
 # Expose port
 EXPOSE 8000
