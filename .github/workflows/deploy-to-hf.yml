@@ -28,8 +28,12 @@ jobs:
           cp -R web space_dist/
           cp requirements.txt space_dist/
           cp Dockerfile space_dist/
-          # Optional: minimal README for the Space
-          if [ -f README.md ]; then cp README.md space_dist/; fi
+          # Use dedicated Space README with HF config
+          if [ -f SPACE_README.md ]; then 
+            cp SPACE_README.md space_dist/README.md
+          elif [ -f README.md ]; then 
+            cp README.md space_dist/
+          fi
           # Clean up caches/artifacts
           rm -rf space_dist/backend/__pycache__ || true
           rm -rf space_dist/backend/*.joblib || true
