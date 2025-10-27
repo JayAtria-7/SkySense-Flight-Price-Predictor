@@ -21,7 +21,11 @@ from datetime import datetime
 import json
 from pathlib import Path
 
-app = FastAPI(title="Flight Price Predictor")
+app = FastAPI(
+    title="FlightIQ",
+    description="AI-powered flight price prediction API",
+    version="1.0.0"
+)
 
 # Allow same-origin and localhost during dev
 app.add_middleware(

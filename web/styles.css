@@ -54,3 +54,17 @@ button#reset,button#clear{background:#23324a;color:var(--text)}
 #scenario-table{width:100%;border-collapse:collapse;margin-top:12px}
 #scenario-table th,#scenario-table td{border:1px solid #2a3a57;padding:8px}
 .microcopy{color:var(--muted); font-size:13px}
+
+/* Footer */
+.footer{background:var(--panel);border-top:1px solid #263648;margin-top:48px;padding:24px 0}
+.footer-content{max-width:1100px;margin:0 auto;padding:0 24px;text-align:center}
+.footer-brand{margin:0 0 16px;font-size:14px}
+.footer-brand strong{color:var(--accent);font-size:16px}
+.footer-brand a{color:var(--accent-2);text-decoration:none}
+.footer-brand a:hover{text-decoration:underline}
+.footer-links{display:flex;justify-content:center;align-items:center;gap:24px;margin:16px 0}
+.footer-links a{display:flex;align-items:center;gap:6px;color:var(--muted);text-decoration:none;transition:color .2s}
+.footer-links a:hover{color:var(--accent)}
+.footer-links svg{flex-shrink:0}
+.footer-copyright{margin:16px 0 0;font-size:13px;color:var(--muted)}
+@media (max-width: 600px){.footer-links{flex-direction:column;gap:12px}}

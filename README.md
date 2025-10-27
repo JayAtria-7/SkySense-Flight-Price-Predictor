@@ -1,16 +1,6 @@
----
-title: SkySense Flight Price Predictor
-emoji: ✈️
-colorFrom: indigo
-colorTo: blue
-sdk: docker
-app_port: 8000
-pinned: false
----
+# FlightIQ - AI Flight Price Predictor
 
-# Flight Price Predictor (UI + API)
-
-A production-ready starter for predicting flight prices using your existing notebook logic. It includes:
+A production-ready AI-powered flight price prediction system. It includes:
 
 - FastAPI backend that loads `Clean_Dataset.csv`, builds a scikit-learn Pipeline, trains a RandomForestRegressor, and exposes `/api/predict`.
 - Responsive web UI (no framework) with accessible, validated form, imputation badges, results with uncertainty and contributors, and scenario chips.
@@ -30,67 +20,6 @@ uvicorn backend.main:app --host 127.0.0.1 --port 8000 --reload
 ```
 
 Open http://127.0.0.1:8000 in your browser.
-
-## Deploy
-
-### Option A: Hugging Face Spaces (free, auto-deploy)
-
-This repo includes a GitHub Action that deploys a curated bundle to your Space on every push to `main`.
-
-1) Create a Space (Docker template) on Hugging Face and note: USERNAME and SPACE name.
-2) In this repo (GitHub) add a repository Secret named `HF_TOKEN` with a Hugging Face Access Token (Write scope).
-3) Ensure the workflow file `.github/workflows/deploy-to-hf.yml` has your `HF_USERNAME` and `SPACE_NAME` (already set in this repo).
-4) Push to `main` or re-run the workflow in the Actions tab.
-
-The workflow builds a small bundle (backend/, web/, requirements.txt, Dockerfile, README.md) and pushes only that to the Space, avoiding large CSVs.
-
-Environment variables (set in your Space → Settings → Variables & secrets):
-- `DATASET_URL` (optional): URL to your CSV dataset (raw GitHub works). Default points to this repo's CSV.
-- `MAX_TRAIN_ROWS` (optional): cap dataset rows for faster, lower-memory training (default 25000).
-
-On first start, the app will try to train from `Clean_Dataset.csv` if present; if not, it will load from `DATASET_URL`. If neither works, it starts with a small dummy model so the API stays responsive.
-
-### Option A: Docker (recommended)
-
-Build and run locally to verify:
-
-```cmd
-docker build -t flight-price-predictor .
-docker run --rm -p 8000:8000 flight-price-predictor
-```
-
-Open http://127.0.0.1:8000/ui/
-
-Deploy to any Docker-capable platform (AWS ECS/Fargate, Azure Web App for Containers, GCP Cloud Run, Fly.io):
-
-- Image name: flight-price-predictor
-- Container port: 8000
-- Health check path: /api/health
-
-### Option B: Render (no Docker needed)
-
-Use the `render.yaml` in the repo as a Blueprint:
-1. Push to GitHub.
-2. In Render, "New +" → "Blueprint" → pick this repo.
-3. Confirm the defaults; it will build with `pip install -r requirements.txt` and start `uvicorn`.
-4. Visit the deployed URL at `/ui/`.
-
-### Option C: Azure App Service (Linux)
-
-1. Create a Web App (Linux) with Python 3.11 runtime.
-2. Deploy code (zip deploy or GitHub Action). Ensure `requirements.txt` is at the repo root.
-3. Configure Startup Command:
-  `uvicorn backend.main:app --host 0.0.0.0 --port 8000`
-4. Set App Settings:
-  - WEBSITES_PORT=8000
-  - PYTHONUNBUFFERED=1
-5. Add health check path: `/api/health`.
-6. Browse to `/ui/`.
-
-Notes:
-- The API trains on startup if `backend/model.joblib` is missing or outdated vs `Clean_Dataset.csv`. For faster cold starts, build the Docker image once and reuse it.
-- If you need exact notebook parity, export your trained pipeline (joblib) and place it at `backend/model.joblib` before deployment.
- - In Docker and Spaces, you can control dataset source with `DATASET_URL` and training cost with `MAX_TRAIN_ROWS`.
 
 ## API
 
