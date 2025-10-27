@@ -56,20 +56,22 @@ button#reset,button#clear{background:#23324a;color:var(--text)}
 .microcopy{color:var(--muted); font-size:13px}
 
 /* Footer */
-.footer{background:var(--panel);border-top:1px solid #263648;margin-top:48px;padding:32px 0}
-.footer-content{max-width:1100px;margin:0 auto;padding:0 24px;text-align:center}
-.footer-brand{margin:0 0 20px;font-size:15px;line-height:1.6}
-.footer-brand strong{color:var(--accent);font-size:18px;font-weight:600}
+.footer{background:var(--panel);border-top:1px solid #263648;margin-top:48px;padding:16px 0;position:relative;bottom:0;width:100%}
+.footer-content{max-width:1100px;margin:0 auto;padding:0 24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px}
+.footer-brand{margin:0;font-size:14px;line-height:1.4;white-space:nowrap}
+.footer-brand strong{color:var(--accent);font-size:15px;font-weight:600}
 .footer-brand a{color:var(--accent-2);text-decoration:none;font-weight:500}
 .footer-brand a:hover{text-decoration:underline;color:var(--accent)}
-.footer-links{display:flex;justify-content:center;align-items:center;gap:20px;margin:24px 0}
-.footer-links a{display:flex;align-items:center;justify-content:center;color:var(--muted);text-decoration:none;transition:all .3s ease;padding:8px;border-radius:8px}
+.footer-links{display:flex;align-items:center;gap:16px;margin:0}
+.footer-links a{display:flex;align-items:center;justify-content:center;color:var(--muted);text-decoration:none;transition:all .3s ease;padding:6px;border-radius:8px}
 .footer-links a:hover{color:var(--accent);background:rgba(76,201,240,0.1);transform:translateY(-2px)}
 .footer-links svg{flex-shrink:0}
-.footer-copyright{margin:20px 0 0;font-size:13px;color:var(--muted);font-weight:400}
-@media (max-width: 600px){
-  .footer{padding:24px 0}
-  .footer-links{gap:16px}
-  .footer-brand{font-size:14px}
-  .footer-brand strong{font-size:16px}
+.footer-copyright{margin:0;font-size:13px;color:var(--muted);font-weight:400;white-space:nowrap}
+@media (max-width: 768px){
+  .footer{padding:12px 0}
+  .footer-content{justify-content:center;text-align:center;gap:12px}
+  .footer-brand{order:1;width:100%;font-size:13px}
+  .footer-brand strong{font-size:14px}
+  .footer-links{order:2;gap:14px}
+  .footer-copyright{order:3;width:100%;font-size:12px}
 }
